@@ -1,0 +1,94 @@
+# ===== Datos y salidas del proyecto =====
+# Los datasets y resultados no se versionan: son grandes y se regeneran
+data/
+output/
+*.csv
+*.joblib
+*.pkl
+
+# Imágenes y vídeos del dataset
+*.jpg
+*.jpeg
+*.png
+*.mp4
+*.avi
+*.mov
+
+# Excepción: permitir imágenes de documentación si las hubiera
+!docs/**/*.png
+!docs/**/*.jpg
+
+# Modelos de pesos descargados (YOLO)
+*.pt
+*.onnx
+
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# ===== Entornos virtuales =====
+venv/
+env/
+ENV/
+.venv/
+env.bak/
+venv.bak/
+
+# ===== Jupyter Notebook =====
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# ===== Herramientas de gestión de paquetes =====
+# uv
+.uv/
+uv.lock
+
+# pip
+pip-log.txt
+pip-delete-this-directory.txt
+
+# ===== IDEs y editores =====
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# ===== Logs y temporales =====
+*.log
+*.tmp
+*.temp
+.cache/
+
+# ===== Específico de este proyecto =====
+# Carpetas de verificación visual generadas por visual_check.py
+verificacion_visual/
+analisis_exploratorio/
+resultados_baseline/
+resultados_xgboost/
+resultados_xgboost_tuneado/
+
+# Logs de rotación que generaban versiones antiguas de los scripts
+rotation_log.csv
+
+# Runs y checkpoints de YOLO/Ultralytics
+runs/
