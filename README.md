@@ -19,10 +19,15 @@ hasta seis tipos de error de forma simultánea:
 Si no se detecta ninguno de estos errores, el fotograma se considera técnica
 correcta ("Bien").
 
-El enfoque es **puramente tabular**: en lugar de clasificar las imágenes
-directamente con una CNN, se extrae la pose del sujeto, se calculan características
-geométricas interpretables (ángulos articulares, distancias normalizadas) y se
-clasifica con modelos de aprendizaje automático sobre esas características.
+El proyecto explora y compara **tres aproximaciones** al problema:
+
+1. **Rama tabular** — extrae la pose del sujeto, calcula características
+   geométricas interpretables (ángulos, distancias) y clasifica con modelos
+   de aprendizaje automático sobre esas características.
+2. **Rama de imagen (CNN)** — clasifica los fotogramas de extremo a extremo
+   con una red convolucional (EfficientNet-B0) mediante transfer learning.
+3. **Rama de fusión** — combina las predicciones de las dos ramas anteriores,
+   aprovechando la información complementaria de cada una.
 
 ## Pipeline
 
@@ -32,16 +37,30 @@ Vídeos
   ├─ Extracción de fotogramas + etiquetado multietiqueta (Roboflow)
   │
   ▼
-Estimación de pose (YOLO11-pose) + selección de la persona principal
+Preprocesado: eliminación de bandas negras y orientación correcta de vídeos (dataset limpio descargable)
   │
-  ▼
-Cálculo de características geométricas (ángulos, distancias, interacciones fase-postura)
-  │
-  ▼
-Clasificación multietiqueta (Random Forest / XGBoost)
-  │
-  ▼
-Predicción de errores por fotograma
+  ├──────────────────────────────┬─────────────────────────────┐
+  ▼                              ▼                             │
+RAMA TABULAR                  RAMA IMAGEN                       │
+  │                              │                             │
+Estimación de pose            EfficientNet-B0                   │
+(YOLO11-pose) +               (transfer learning,               │
+selección persona             fine-tuning en 2 fases)           │
+principal                        │                             │
+  │                              │                             │
+Características                   │                             │
+geométricas                      │                             │
+  │                              │                             │
+Clasificador                  Clasificador                      │
+(XGBoost)                     (CNN)                              │
+  │                              │                             │
+  └──────────────┬───────────────┘                             │
+                 ▼                                              │
+          RAMA DE FUSIÓN  ◄─────────────────────────────────────┘
+          (combina probabilidades de ambas ramas)
+                 │
+                 ▼
+       Predicción final de errores por fotograma
 ```
 
 ## Estructura del repositorio
@@ -49,15 +68,18 @@ Predicción de errores por fotograma
 ```
 .
 ├── scripts/
+│   ├── preprocess_remove_borders.py   # Elimina bandas negras de las imágenes
 │   ├── extract_keypoints.py           # Extrae keypoints de la persona principal
 │   ├── compute_features.py            # Calcula las características geométricas
 │   ├── split_dataset.py               # Divide en train/val/test estratificado
 │   ├── exploratory_analysis.py        # Análisis exploratorio de las features
 │   ├── visual_check.py                # Verificación visual de la extracción de pose
 │   ├── apply_mlsmote.py               # Oversampling de clases minoritarias (MLSMOTE)
-│   ├── train_baseline.py              # Baseline con Random Forest
-│   ├── train_xgboost.py               # Modelo XGBoost (modelo final)
-│   └── train_xgboost_tuned.py         # XGBoost con búsqueda de hiperparámetros
+│   ├── train_baseline.py              # Rama tabular: baseline Random Forest
+│   ├── train_xgboost.py               # Rama tabular: modelo XGBoost
+│   ├── train_xgboost_tuned.py         # Rama tabular: XGBoost con búsqueda de hiperparámetros
+│   ├── train_cnn.py                   # Rama imagen: CNN EfficientNet-B0
+│   └── train_fusion.py                # Rama fusión: combina tabular + CNN
 ├── data/                              # Datasets (no versionado, ver .gitignore)
 ├── output/                            # Resultados y modelos (no versionado)
 ├── requirements.txt
@@ -68,6 +90,7 @@ Predicción de errores por fotograma
 ## Requisitos
 
 - Python 3.10 o superior
+- GPU recomendada para la rama CNN (la rama tabular funciona en CPU)
 - Las dependencias están en `requirements.txt`
 
 Instalación:
@@ -76,28 +99,53 @@ Instalación:
 pip install -r requirements.txt
 ```
 
-Dependencias principales: `ultralytics` (YOLO11-pose), `xgboost`, `scikit-learn`,
-`opencv-python`, `pandas`, `numpy`, `matplotlib`, `seaborn`, `iterative-stratification`.
+Para la rama CNN se necesita PyTorch con soporte CUDA. Consultar el comando
+de instalación específico para la versión de CUDA del sistema en la web oficial
+de PyTorch.
 
 ## Uso
 
 El pipeline se ejecuta en orden. Antes de cada script, revisar las rutas en su
 sección de configuración (`IMAGES_DIR`, rutas de entrada/salida).
 
-### Pipeline base (genera el modelo final)
+### 1. Preparación de datos (común a todas las ramas)
 
 ```bash
-# 1. Extraer keypoints de la persona principal
+# Eliminar bandas negras de las imágenes
+python scripts/preprocess_remove_borders.py
+
+# Extraer keypoints de la persona principal
 python scripts/extract_keypoints.py
 
-# 2. Calcular las características geométricas
+# Calcular las características geométricas
 python scripts/compute_features.py
 
-# 3. Dividir en train / validation / test
+# Dividir en train / validation / test (estratificado multietiqueta)
 python scripts/split_dataset.py
+```
 
-# 4. Entrenar el modelo final (XGBoost)
+### 2. Rama tabular
+
+```bash
+# Baseline con Random Forest
+python scripts/train_baseline.py
+
+# Modelo XGBoost (el usado en la fusión)
 python scripts/train_xgboost.py
+```
+
+### 3. Rama de imagen
+
+```bash
+# CNN EfficientNet-B0 con transfer learning
+python scripts/train_cnn.py
+```
+
+### 4. Rama de fusión
+
+```bash
+# Combina las predicciones de la rama tabular y la CNN
+python scripts/train_fusion.py
 ```
 
 ### Análisis y experimentos adicionales
@@ -109,20 +157,16 @@ python scripts/exploratory_analysis.py
 # Verificación visual de la extracción de pose
 python scripts/visual_check.py
 
-# Baseline con Random Forest
-python scripts/train_baseline.py
-
-# Oversampling de clases minoritarias y reentrenamiento
+# Oversampling de clases minoritarias (experimento)
 python scripts/apply_mlsmote.py
-# (luego ajustar TRAIN_CSV en train_xgboost.py al dataset aumentado)
 
-# Búsqueda de hiperparámetros
+# Búsqueda de hiperparámetros de XGBoost (experimento)
 python scripts/train_xgboost_tuned.py
 ```
 
-## Características utilizadas
+## Características utilizadas (rama tabular)
 
-El modelo emplea 13 características derivadas de la pose:
+El modelo tabular emplea 13 características derivadas de la pose:
 
 **Ángulos y distancias básicas:** ángulo de la espalda respecto a la vertical,
 ángulo del cuello, ángulo de la rodilla, ángulo de la cadera, anchura de agarre
@@ -137,24 +181,31 @@ características que combinan ángulos con un indicador de la fase del ejercicio
 
 ## Resultados
 
-Modelo final: **XGBoost** multietiqueta (un clasificador binario por clase, con
-`scale_pos_weight` por clase y early stopping).
+Comparativa de las tres aproximaciones (macro-F1 en el conjunto de test,
+con umbrales calibrados por clase sobre validation):
 
-| Métrica | Valor (test) |
-|---------|--------------|
-| Macro-F1 | 0.55 |
-| Micro-F1 | 0.57 |
+| Modelo | Macro-F1 | Micro-F1 |
+|--------|----------|----------|
+| Random Forest (tabular, baseline) | 0.53 | — |
+| XGBoost (tabular) | 0.55 | 0.58 |
+| EfficientNet-B0 (CNN) | 0.64 | 0.64 |
+| **Fusión tabular + CNN** | **0.65** | **0.67** |
 
-F1 por clase (test, umbrales calibrados):
+F1 por clase del modelo de fusión (test, umbrales calibrados):
 
 | Clase | F1 |
 |-------|-----|
-| Pierna | 0.65 |
-| Cabeza | 0.62 |
-| Dorsal | 0.57 |
-| Agarre | 0.54 |
-| Lumbar | 0.51 |
-| Distancia | 0.40 |
+| Pierna | 0.82 |
+| Agarre | 0.69 |
+| Cabeza | 0.65 |
+| Dorsal | 0.63 |
+| Lumbar | 0.59 |
+| Distancia | 0.53 |
+
+La rama de imagen supera a la tabular, especialmente en errores cuya señal
+discriminante reside en detalles visuales finos (Agarre, Distancia). La rama
+de fusión mejora sobre ambas, confirmando que la información geométrica y la
+visual son complementarias.
 
 ## Limitaciones conocidas
 
@@ -162,21 +213,25 @@ F1 por clase (test, umbrales calibrados):
   etiquetado, no fue posible garantizar que train, validation y test contengan
   fotogramas de sujetos completamente distintos. Las métricas pueden estar
   ligeramente sobreestimadas respecto a un escenario con sujetos nuevos.
-- **Techo del enfoque tabular.** Algunas clases (especialmente Distancia y
-  Lumbar) tienen un rendimiento limitado. El análisis sugiere que ciertos errores
-  no son completamente discriminables a partir de pose 2D.
+- **Clase Distancia.** Es la clase con menos ejemplos y la de peor rendimiento
+  en todas las aproximaciones. Su detección fiable requeriría más datos.
 - **Trabajo frame a frame.** El sistema clasifica fotogramas independientes y no
   modela la dimensión temporal del ejercicio.
+- **Validation reducido para la fusión.** El meta-modelo de fusión se calibra
+  sobre un conjunto de validación pequeño, lo que limita la complejidad de las
+  estrategias de combinación que pueden emplearse sin sobreajuste.
 
 ## Trabajo futuro
 
 - Recogida de datos con trazabilidad explícita sujeto-vídeo para un split estricto.
-- Incorporación de información temporal entre fotogramas.
+- Incorporación de información temporal entre fotogramas (modelos secuenciales).
+- Ampliación del dataset, en particular de las clases minoritarias.
+- Exploración de backbones más recientes para la rama de imagen.
 
 ## Autores
 
 Proyecto de la asignatura de Visión Artificial.
 - Alejandro Sosa Corral
-- Antonio Quijano Herrera
 - Lucía García Lado
+- Antonio Quijano Herrera
 - Carmen Gutiérrez Silva

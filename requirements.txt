@@ -1,13 +1,18 @@
 # Estimación de pose
 ultralytics>=8.3.0
 
-# Modelos de clasificación
+# Modelos de la rama tabular
 xgboost>=2.0.0
 scikit-learn>=1.3.0
 iterative-stratification>=0.1.7
 
+# Rama CNN (instalar la build con soporte CUDA correspondiente desde pytorch.org)
+torch>=2.1.0
+torchvision>=0.16.0
+
 # Procesamiento de imágenes
 opencv-python>=4.8.0
+pillow>=10.0.0
 
 # Manipulación de datos
 pandas>=2.0.0

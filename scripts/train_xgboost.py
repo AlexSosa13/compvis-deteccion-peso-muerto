@@ -32,7 +32,7 @@ import joblib
 TRAIN_CSV = "splits/dataset_train.csv"
 VAL_CSV = "splits/dataset_val.csv"
 TEST_CSV = "splits/dataset_test.csv"
-OUTPUT_DIR = "resultados_xgboost"
+OUTPUT_DIR = "output/resultados_xgboost"
 
 LABEL_COLUMNS = ["Agarre", "Cabeza", "Distancia", "Dorsal", "Lumbar", "Pierna"]
 

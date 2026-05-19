@@ -18,8 +18,9 @@ output/
 !docs/**/*.png
 !docs/**/*.jpg
 
-# Modelos de pesos descargados (YOLO)
+# Modelos y pesos
 *.pt
+*.pth
 *.onnx
 
 # ===== Python =====
@@ -80,15 +81,20 @@ pip-delete-this-directory.txt
 .cache/
 
 # ===== Específico de este proyecto =====
-# Carpetas de verificación visual generadas por visual_check.py
+# Carpetas generadas por los scripts
 verificacion_visual/
 analisis_exploratorio/
 resultados_baseline/
 resultados_xgboost/
 resultados_xgboost_tuneado/
+resultados_cnn/
+resultados_fusion/
 
-# Logs de rotación que generaban versiones antiguas de los scripts
+# Logs de rotación de versiones antiguas de los scripts
 rotation_log.csv
 
 # Runs y checkpoints de YOLO/Ultralytics
 runs/
+
+# Caché de modelos preentrenados de PyTorch (se descargan automáticamente)
+.cache/torch/

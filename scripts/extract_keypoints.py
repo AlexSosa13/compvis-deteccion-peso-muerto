@@ -20,7 +20,7 @@ import numpy as np
 from ultralytics import YOLO
 
 # ---------- CONFIGURACIÓN ----------
-IMAGES_DIR = "train_clean"   # AJUSTAR
+IMAGES_DIR = "data"   # AJUSTAR
 OUTPUT_CSV = "output/keypoints.csv"
 MODEL_NAME = "yolo11n-pose.pt"
 
