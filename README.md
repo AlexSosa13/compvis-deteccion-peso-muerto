@@ -68,7 +68,6 @@ Clasificador                  Clasificador                      │
 ```
 .
 ├── scripts/
-│   ├── preprocess_remove_borders.py   # Elimina bandas negras de las imágenes
 │   ├── extract_keypoints.py           # Extrae keypoints de la persona principal
 │   ├── compute_features.py            # Calcula las características geométricas
 │   ├── split_dataset.py               # Divide en train/val/test estratificado
