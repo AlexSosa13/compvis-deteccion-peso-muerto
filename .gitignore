@@ -6,14 +6,6 @@ output/
 *.joblib
 *.pkl
 
-# Imágenes y vídeos del dataset
-*.jpg
-*.jpeg
-*.png
-*.mp4
-*.avi
-*.mov
-
 # Excepción: permitir imágenes de documentación si las hubiera
 !docs/**/*.png
 !docs/**/*.jpg
@@ -82,13 +74,13 @@ pip-delete-this-directory.txt
 
 # ===== Específico de este proyecto =====
 # Carpetas generadas por los scripts
-verificacion_visual/
-analisis_exploratorio/
-resultados_baseline/
-resultados_xgboost/
-resultados_xgboost_tuneado/
-resultados_cnn/
-resultados_fusion/
+output/verificacion_visual/
+output/analisis_exploratorio/
+output/resultados_baseline/
+output/resultados_xgboost/
+output/resultados_xgboost_tuneado/
+output/resultados_cnn/
+output/resultados_fusion/
 
 # Logs de rotación de versiones antiguas de los scripts
 rotation_log.csv
