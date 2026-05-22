@@ -1,4 +1,4 @@
-# Catálogo de gráficas para la memoria
+# Catálogo de gráficas para la memoria/presentación
 
 Documento de apoyo para la redacción. Describe cada gráfica disponible, qué
 muestra, y qué se puede decir sobre
@@ -330,7 +330,7 @@ fusión mejora, negativos que empeora.
 
 ---
 
-## Resumen rápido por sección de la memoria (sugerencia)
+## Resumen rápido por sección de la memoria/presentación (sugerencia)
 
 | Sección | Gráficas recomendadas |
 |---------|----------------------|

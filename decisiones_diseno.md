@@ -1,6 +1,6 @@
 # Decisiones de diseño del proyecto
 
-Documento de apoyo para la redacción de la memoria. Recoge las decisiones más
+Documento de apoyo para la redacción de la memoria/presentación. Recoge las decisiones más
 relevantes tomadas durante el desarrollo, su motivación y, donde procede, las
 alternativas que se descartaron.
 

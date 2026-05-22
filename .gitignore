@@ -11,7 +11,7 @@ output/
 !docs/**/*.jpg
 
 # Modelos y pesos
-*.pt
+*.pt           # pesos de YOLO y de la CNN entrenada
 *.pth
 *.onnx
 
@@ -88,5 +88,9 @@ rotation_log.csv
 # Runs y checkpoints de YOLO/Ultralytics
 runs/
 
-# Caché de modelos preentrenados de PyTorch (se descargan automáticamente)
+# Cachés de modelos preentrenados (se descargan automáticamente)
 .cache/torch/
+
+# Cachés y archivos temporales de Gradio
+gradio_cached_examples/
+flagged/
